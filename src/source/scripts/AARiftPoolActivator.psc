@@ -7,12 +7,17 @@ Event OnTriggerEnter(ObjectReference triggerRef)
 	Actor akActionRef = triggerRef as Actor 
 	if (akActionRef != Game.GetPlayer() && !akActionRef.isincombat())
 		AARiftPoolSpell.Cast(akActionRef,akActionRef) 
+		
+		int i = 0
 		; Give KN_KTC chance to update quest
-		if (!KN_KTC_Quest)
-			Utility.Wait(1)
-		endif
+		while (!KN_KTC_Quest && i < 50)
+			Utility.Wait(0.1)
+			i += 1
+		endwhile
 		if (KN_KTC_Quest)
 			(KN_KTC_Quest as KN_KTC_BathQuest).StartBath(akActionRef)
+		else
+			; Debug.Notification("No quest, abort")
 		endif
 	endif 
 EndEvent 
