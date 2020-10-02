@@ -1,7 +1,10 @@
 Scriptname KN_KTC_BathPlayerScript extends ReferenceAlias Hidden 
 
-Quest Property KN_KTC_Quest auto
+Quest Property BathQuest auto
+GlobalVariable Property EndBathOnStandup auto
 
 Event OnGetUp(ObjectReference akFurniture)
-	(KN_KTC_Quest as KN_KTC_BathQuest).EndBath()
+	if (EndBathOnStandup.GetValue() == 1)
+		(BathQuest as KN_KTC_BathQuest).EndAllBaths()
+	endif
 EndEvent

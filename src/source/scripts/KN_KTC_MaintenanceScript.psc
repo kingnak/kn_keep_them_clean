@@ -8,5 +8,5 @@ Event OnPlayerLoadGame()
 EndEvent
 
 Event OnLocationChange(Location akOldLoc, Location akNewLoc)
-	QuestScript.ChangedLocation(akNewLoc)
+	QuestScript.ChangedLocation(akOldLoc, akNewLoc)
 EndEvent

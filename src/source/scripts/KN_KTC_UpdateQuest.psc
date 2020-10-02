@@ -13,11 +13,13 @@ Function Maintenance()
 	; Debug.Notification("KN_KTC: Running " + fVersion)
 EndFunction
 
-Function ChangedLocation(Location akLocation)
-	if (akLocation.HasKeyword(ShowerInnLocationKw))
+Function ChangedLocation(Location akOldLoc, Location akNewLoc)
+	if (akOldLoc.HasKeyword(ShowerInnLocationKw))
+		(KN_BathQuest as KN_KTC_BathQuest).FinishBathQuest()
+	endif
+	if (akNewLoc.HasKeyword(ShowerInnLocationKw))
 		_ActivateActivator()
 	endif
-	
 EndFunction
 
 Function _ActivateActivator()

@@ -8,6 +8,7 @@ Formlist Property FurnitureFinderList auto
 
 Idle Property IdleWashHandsCr auto
 Idle Property IdleWashHands auto
+Idle Property IdleWashArms auto
 Idle Property IdleWipeBrows auto
 Spell Property WashSpell auto
 
@@ -17,40 +18,59 @@ Function StartBath(Actor akActor)
 		return
 	endif
 	
-	; Debug.Notification("KN_KTC: Starting Bath")
+	; Debug.Notification("KN_KTC: Starting Bath for actor " + akActor.GetFormID())
 	; Ensure started, and don't run twice
 	if (!_StartQuest())
+		return
+	endif
+	
+	if (!_EnsureSittingFurniture())
 		return
 	endif
 	
 	ReferenceAlias sittingActor = _GetSittingActorRef()
 	if (!sittingActor.GetActorRef())
 		sittingActor.ForceRefTo(akActor)
-		
-		ObjectReference furnitureLocation = _FindFurnitureLocation()
-		if (furnitureLocation)
-			_GetSittingFurnitureRef().ForceRefTo(furnitureLocation)
-			NpcBathWashScene.Start()
-		else
-			; Debug.Notification("KN_KTC: No furniture location found")
+		NpcBathWashScene.Start()
+	endif
+EndFunction
+
+Function EndBath(Actor akActor)
+	; Debug.Notification("KN_KTC: Ending Bath for actor " + akActor.GetFormID())
+	ReferenceAlias sittingActor = _GetSittingActorRef()
+	if (sittingActor.GetActorRef()) 
+		if (akActor == sittingActor.GetActorRef())
+			sittingActor.Clear()
+			NpcBathWashScene.Stop()
 		endif
 	endif
 EndFunction
 
-Function EndBath(Actor akActor = none)
-	;Debug.Notification("KN_KTC: Ending Bath")
-	ReferenceAlias sittingActor = _GetSittingActorRef()
-	if (sittingActor.GetActorRef()) 
-		if (akActor != none)
-			if (akActor != sittingActor.GetActorRef())
-				return
-			endif
+Function EndAllBaths()
+	; Debug.Notification("KN_KTC: Ending all baths")
+	NpcBathWashScene.Stop()
+	_GetSittingActorRef().Clear()
+EndFunction
+
+Function FinishBathQuest()
+	; Debug.Notification("KN_KTC: Finishing baths")
+	EndAllBaths()
+	_GetSittingFurnitureRef().Clear()
+	_StopQuest()
+EndFunction
+
+bool Function _EnsureSittingFurniture()
+	ReferenceAlias furnitureRef = _GetSittingFurnitureRef()
+	if (!furnitureRef.GetRef())
+		ObjectReference furnitureLocation = _FindFurnitureLocation()
+		if (furnitureLocation)
+			_GetSittingFurnitureRef().ForceRefTo(furnitureLocation)
+		else
+			; Debug.Notification("KN_KTC: No furniture location found")
+			return false
 		endif
 	endif
-	sittingActor.Clear()
-	_GetSittingFurnitureRef().Clear()
-	NpcBathWashScene.Stop()
-	_StopQuest()
+	return true
 EndFunction
 
 Function _WashNPCAnimation(Actor akActor, bool turnAround)
@@ -59,8 +79,8 @@ Function _WashNPCAnimation(Actor akActor, bool turnAround)
 	endif
 	
 	if (turnAround)
-		float angleZ = akActor.GetAngleZ()
-		angleZ += 180
+		; float angleZ = akActor.GetAngleZ()
+		; angleZ += 180
 		; akActor.TranslateTo(akActor.GetPositionX(), akActor.getPositionY(), akActor.GetPositionZ(), akActor.GetAngleX(), akActor.GetAngleY(), angleZ, 0.0, 150)
 		akActor.SetLookAt(Game.GetPlayer(), true)
 		Utility.Wait(1.5)
@@ -75,11 +95,13 @@ Function _WashNPCAnimation(Actor akActor, bool turnAround)
 	akActor.PlayIdle(IdleWashHandsCr)
 	Utility.Wait(5)
 	akActor.PlayIdle(IdleWashHands)
+	Utility.Wait(1)
+	akActor.PlayIdle(IdleWashArms)
+	Utility.Wait(5)
 	_WashNPC(akActor)
-	Utility.Wait(3)
-	akActor.PlayIdle(IdleWipeBrows)
 	akActor.RemoveSpell(WashSpell)
-	Utility.Wait(1.5)
+	akActor.PlayIdle(IdleWipeBrows)
+	Utility.Wait(2)
 EndFunction
 
 Function _WashNPC(Actor akActor)
@@ -122,9 +144,9 @@ EndFunction
 
 bool Function _StartQuest()
 	if (!self.IsStopped())
-		return false
+		return true
 	endif
-	;Debug.Notification("KN_KTC: Starting Quest")
+	; Debug.Notification("KN_KTC: Starting Quest")
 	self.Start()
 	int i = 0
 	while (self.IsStopped() && i < 50)
@@ -138,7 +160,7 @@ Function _StopQuest()
 	if (self.IsStopped())
 		return
 	endif
-	;Debug.Notification("KN_KTC: Stopping Quest")
+	; Debug.Notification("KN_KTC: Stopping Quest")
 	self.Stop()
 	int i = 0
 	while (!self.IsStopped() && i < 50)
