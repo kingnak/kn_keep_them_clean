@@ -26,6 +26,7 @@ Function _ActivateActivator()
 	ObjectReference rift = Game.FindClosestReferenceOfAnyTypeInListFromRef(SBBath_RiftPoolActivator, Game.GetPlayer(), 500)
 	if (rift)
 		(rift as AARiftPoolActivator).KN_KTC_Quest = KN_BathQuest
+		(KN_BathQuest as KN_KTC_BathQuest).StartBathQuest()
 	else
 		; Debug.Notification("KN_KTC: No activator found")
 	endif
